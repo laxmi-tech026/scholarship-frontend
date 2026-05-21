@@ -12,7 +12,7 @@ function Dashboard() {
   };
 
   useEffect(() => {
-    fetch("http://localhost:5000/application", {
+    fetch("https://scholarship-backend-waaq.onrender.com/application", {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     })
       .then((res) => res.json())

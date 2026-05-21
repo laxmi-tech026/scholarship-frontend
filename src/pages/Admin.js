@@ -6,7 +6,7 @@ function Admin() {
   const [filter, setFilter] = useState("");
 
   useEffect(() => {
-    fetch("http://localhost:5000/application", {
+    fetch("https://scholarship-backend-waaq.onrender.com/application", {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     })
       .then((res) => res.json())
@@ -14,7 +14,7 @@ function Admin() {
   }, []);
 
   const updateStatus = async (id, status) => {
-    const response = await fetch(`http://localhost:5000/update-status/${id}`, {
+    const response = await fetch(`https://scholarship-backend-waaq.onrender.com/update-status/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),

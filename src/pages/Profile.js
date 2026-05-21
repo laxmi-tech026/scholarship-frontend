@@ -4,7 +4,7 @@ function Profile() {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    fetch("http://localhost:5000/my-application", {
+    fetch("https://scholarship-backend-waaq.onrender.com/my-application", {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     })
       .then((res) => res.json())

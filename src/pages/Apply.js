@@ -17,7 +17,7 @@ function Apply() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
-    const response = await fetch("http://localhost:5000/apply", {
+    const response = await fetch("https://scholarship-backend-waaq.onrender.com/apply", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
