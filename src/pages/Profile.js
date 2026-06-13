@@ -1,15 +1,51 @@
 import { useEffect, useState } from "react";
 
+const API = "https://scholarship-backend-waaq.onrender.com";
+
 function Profile() {
-  const [data, setData] = useState(null);
+  const [appData, setAppData] = useState(null);
+  const [userData, setUserData] = useState(null);
+  const [photoFile, setPhotoFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
-    fetch("https://scholarship-backend-waaq.onrender.com/my-application", {
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    const token = localStorage.getItem("token");
+
+    // Fetch user info
+    fetch(`${API}/me`, {
+      headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
-      .then((result) => setData(result));
+      .then((result) => setUserData(result));
+
+    // Fetch application info
+    fetch(`${API}/my-application`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((result) => setAppData(result));
   }, []);
+
+  const handlePhotoUpload = async () => {
+    if (!photoFile) return alert("Please select a photo first");
+    setUploading(true);
+    const token = localStorage.getItem("token");
+    const formData = new FormData();
+    formData.append("photo", photoFile);
+
+    const res = await fetch(`${API}/upload-photo`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    });
+    const data = await res.json();
+    alert(data.message);
+    setUploading(false);
+    // Refresh user data
+    fetch(`${API}/me`, { headers: { Authorization: `Bearer ${token}` } })
+      .then((r) => r.json())
+      .then((r) => setUserData(r));
+  };
 
   const getStatusClass = (status) => {
     if (status === "approved") return "status-approved";
@@ -17,45 +53,105 @@ function Profile() {
     return "status-pending";
   };
 
+  const photoUrl = userData?.photo
+    ? `${API}/uploads/${userData.photo}`
+    : null;
+
   return (
     <div className="container">
       <h2>Student Profile</h2>
 
-      {data ? (
-        <div className="scholarship-card">
-          <div
-            style={{
-              width: "64px",
-              height: "64px",
-              borderRadius: "50%",
-              background: "#0f4c75",
-              color: "#fff",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "28px",
-              fontWeight: "700",
-              margin: "0 auto 24px",
-              fontFamily: "'Playfair Display', serif",
-            }}
-          >
-            {data.name?.charAt(0).toUpperCase()}
+      {/* ── User Info Card ── */}
+      {userData && (
+        <div className="scholarship-card" style={{ marginBottom: "24px" }}>
+          {/* Profile Photo */}
+          <div style={{ textAlign: "center", marginBottom: "20px" }}>
+            {photoUrl ? (
+              <img
+                src={photoUrl}
+                alt="Profile"
+                style={{
+                  width: "90px", height: "90px", borderRadius: "50%",
+                  objectFit: "cover", border: "3px solid #0f4c75",
+                  display: "block", margin: "0 auto 12px"
+                }}
+              />
+            ) : (
+              <div style={{
+                width: "90px", height: "90px", borderRadius: "50%",
+                background: "#0f4c75", color: "#fff",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: "36px", fontWeight: "700", margin: "0 auto 12px",
+                fontFamily: "'Playfair Display', serif"
+              }}>
+                {userData.name?.charAt(0).toUpperCase()}
+              </div>
+            )}
+
+            {/* Role Badge */}
+            <span style={{
+              display: "inline-block",
+              background: userData.role === "admin" ? "#0f4c75" : "#e8f4fd",
+              color: userData.role === "admin" ? "#fff" : "#1b6ca8",
+              padding: "4px 14px", borderRadius: "20px",
+              fontSize: "13px", fontWeight: "700", textTransform: "uppercase",
+              letterSpacing: "0.05em"
+            }}>
+              {userData.role === "admin" ? "👑 Admin" : "👤 User"}
+            </span>
           </div>
 
+          {/* Upload Photo */}
+          <div style={{ textAlign: "center", marginBottom: "20px" }}>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setPhotoFile(e.target.files[0])}
+              style={{ display: "block", margin: "0 auto 10px", background: "#fff" }}
+            />
+            <button onClick={handlePhotoUpload} disabled={uploading}
+              style={{ background: "#1b6ca8", padding: "9px 22px", fontSize: "14px" }}>
+              {uploading ? "Uploading..." : "Upload Photo"}
+            </button>
+          </div>
+
+          {/* User Details */}
           <div className="profile-info">
-            <p><span>Name</span><span>{data.name}</span></p>
-            <p><span>Email</span><span>{data.email}</span></p>
-            <p><span>Course</span><span>{data.course}</span></p>
-            <p><span>Annual Income</span><span>₹{data.income}</span></p>
-            <p>
-              <span>Status</span>
-              <span className={getStatusClass(data.status)}>{data.status}</span>
-            </p>
+            <p><span>Name</span><span>{userData.name}</span></p>
+            <p><span>Email</span><span>{userData.email}</span></p>
+            <p><span>Phone</span><span>{userData.phone}</span></p>
+            <p><span>Role</span><span>{userData.role}</span></p>
           </div>
         </div>
-      ) : (
+      )}
+
+      {/* ── Application Info Card ── */}
+      {appData && (
+        <div className="scholarship-card">
+          <h3>My Application</h3>
+          <div className="profile-info">
+            <p><span>Course</span><span>{appData.course}</span></p>
+            <p><span>Annual Income</span><span>₹{appData.income}</span></p>
+            <p>
+              <span>Status</span>
+              <span className={getStatusClass(appData.status)}>{appData.status}</span>
+            </p>
+            {appData.document && (
+              <p>
+                <span>Document</span>
+                <a href={`${API}/uploads/${appData.document}`} target="_blank" rel="noreferrer"
+                  style={{ color: "#1b6ca8", fontWeight: 600 }}>
+                  View Document
+                </a>
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {!userData && !appData && (
         <p style={{ textAlign: "center", padding: "40px 0", color: "#94a3b8" }}>
-          No application data found.
+          Loading profile...
         </p>
       )}
     </div>

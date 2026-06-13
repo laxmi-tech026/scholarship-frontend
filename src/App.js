@@ -11,6 +11,8 @@ import Profile from "./pages/Profile";
 
 function NavBar() {
   const location = useLocation();
+  const role = localStorage.getItem("role");
+  const token = localStorage.getItem("token");
 
   const linkStyle = (path) => ({
     color: location.pathname === path ? "#fff" : "rgba(255,255,255,0.75)",
@@ -25,12 +27,13 @@ function NavBar() {
 
   return (
     <nav>
-      <Link to="/" style={linkStyle("/")}>Register</Link>
-      <Link to="/login" style={linkStyle("/login")}>Login</Link>
-      <Link to="/apply" style={linkStyle("/apply")}>Apply</Link>
-      <Link to="/dashboard" style={linkStyle("/dashboard")}>Dashboard</Link>
-      <Link to="/Admin" style={linkStyle("/Admin")}>Admin</Link>
-      <Link to="/profile" style={linkStyle("/profile")}>Profile</Link>
+      {!token && <Link to="/" style={linkStyle("/")}>Register</Link>}
+      {!token && <Link to="/login" style={linkStyle("/login")}>Login</Link>}
+      {token && role === "user" && <Link to="/home" style={linkStyle("/home")}>Home</Link>}
+      {token && role === "user" && <Link to="/apply" style={linkStyle("/apply")}>Apply</Link>}
+      {token && role === "user" && <Link to="/dashboard" style={linkStyle("/dashboard")}>Dashboard</Link>}
+      {token && role === "user" && <Link to="/profile" style={linkStyle("/profile")}>Profile</Link>}
+      {token && role === "admin" && <Link to="/Admin" style={linkStyle("/Admin")}>Admin Panel</Link>}
     </nav>
   );
 }
@@ -44,9 +47,9 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/apply" element={<ProtectedRoute><Apply /></ProtectedRoute>} />
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-        <Route path="/Admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/Admin" element={<ProtectedRoute adminOnly={true}><Admin /></ProtectedRoute>} />
+        <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );

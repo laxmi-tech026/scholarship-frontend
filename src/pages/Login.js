@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+const API = "https://scholarship-backend-waaq.onrender.com";
+
 function Login() {
   const navigate = useNavigate();
   const [user, setUser] = useState({ email: "", password: "" });
@@ -11,15 +13,28 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const response = await fetch("https://scholarship-backend-waaq.onrender.com/login", {
+    const response = await fetch(`${API}/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(user),
     });
     const data = await response.json();
-    alert(data.message);
+
+    if (!data.token) {
+      alert(data.message || "Login failed. Please register first.");
+      return;
+    }
+
     localStorage.setItem("token", data.token);
-    navigate("/home");
+    localStorage.setItem("role", data.role);
+    alert(data.message);
+
+    // Role-based redirect
+    if (data.role === "admin") {
+      navigate("/Admin");
+    } else {
+      navigate("/home");
+    }
   };
 
   return (
@@ -28,16 +43,16 @@ function Login() {
       <div className="auth-form">
         <form onSubmit={handleSubmit}>
           <label>Email Address</label>
-          <input type="email" name="email" placeholder="Enter your email" onChange={handleChange} />
+          <input type="email" name="email" placeholder="Enter your email" onChange={handleChange} required />
 
           <label>Password</label>
-          <input type="password" name="password" placeholder="Enter your password" onChange={handleChange} />
+          <input type="password" name="password" placeholder="Enter your password" onChange={handleChange} required />
 
           <button type="submit" style={{ width: "100%", marginTop: "24px", padding: "13px" }}>
             Login
           </button>
         </form>
-        <p className="form-footer">Don't have an account? <a href="/" style={{ color: "#1b6ca8", fontWeight: 600 }}>Register</a></p>
+        <p className="form-footer">Don't have an account? <a href="/" style={{ color: "#1b6ca8", fontWeight: 600 }}>Register first</a></p>
       </div>
     </div>
   );
