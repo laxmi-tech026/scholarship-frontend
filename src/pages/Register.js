@@ -3,7 +3,7 @@ import { useState } from "react";
 const API = "https://scholarship-backend-waaq.onrender.com";
 
 function Register() {
-  const [user, setUser] = useState({ name: "", email: "", password: "", role: "user" });
+  const [user, setUser] = useState({ name: "", email: "", password: "" });
   const [error, setError] = useState("");
 
   const handleChange = (e) => {
@@ -20,7 +20,7 @@ function Register() {
     const response = await fetch(`${API}/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(user),
+      body: JSON.stringify({ ...user, role: "user" }),
     });
     const data = await response.json();
     alert(data.message);
@@ -40,12 +40,6 @@ function Register() {
           <label>Password (min 6 characters)</label>
           <input type="password" name="password" placeholder="Minimum 6 characters" onChange={handleChange} required />
           {error && <p style={{ color: "red", fontSize: "13px", margin: "2px 0" }}>{error}</p>}
-
-          <label>Role</label>
-          <select name="role" onChange={handleChange}>
-            <option value="user">User</option>
-            <option value="admin">Admin</option>
-          </select>
 
           <button type="submit" style={{ width: "100%", marginTop: "24px", padding: "13px" }}>
             Register
