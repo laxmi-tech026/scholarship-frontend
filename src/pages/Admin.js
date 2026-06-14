@@ -1,20 +1,24 @@
 import { useEffect, useState } from "react";
 
+const API = "https://scholarship-backend-waaq.onrender.com";
+
 function Admin() {
   const [application, setApplication] = useState([]);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("");
 
   useEffect(() => {
-    fetch("https://scholarship-backend-waaq.onrender.com/application", {
+    fetch(`${API}/application`, {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     })
       .then((res) => res.json())
-      .then((data) => setApplication(data));
+      .then((data) => {
+        if (Array.isArray(data)) setApplication(data);
+      });
   }, []);
 
   const updateStatus = async (id, status) => {
-    const response = await fetch(`https://scholarship-backend-waaq.onrender.com/update-status/${id}`, {
+    const response = await fetch(`${API}/update-status/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),
@@ -48,10 +52,7 @@ function Admin() {
           onChange={(e) => setSearch(e.target.value)}
           style={{ flex: 1, minWidth: "200px", margin: 0 }}
         />
-        <select
-          onChange={(e) => setFilter(e.target.value)}
-          style={{ width: "160px", margin: 0 }}
-        >
+        <select onChange={(e) => setFilter(e.target.value)} style={{ width: "160px", margin: 0 }}>
           <option value="">All Status</option>
           <option value="approved">Approved</option>
           <option value="rejected">Rejected</option>
