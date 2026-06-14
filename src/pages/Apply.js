@@ -6,27 +6,27 @@ const API = "https://scholarship-backend-waaq.onrender.com";
 function Apply() {
   const location = useLocation();
   const [form, setForm] = useState({
-    name: "",
-    email: "",
-    course: location.state?.course || "",
-    income: "",
+    name: "", email: "", phone: "",
+    course: location.state?.course || "", income: "",
   });
-  const [document, setDocument] = useState(null);
+  const [doc, setDoc] = useState(null);
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (form.phone && !/^\d{10}$/.test(form.phone)) {
+      alert("Phone number must be exactly 10 digits");
+      return;
+    }
     const token = localStorage.getItem("token");
-
     const formData = new FormData();
     formData.append("name", form.name);
     formData.append("email", form.email);
+    formData.append("phone", form.phone);
     formData.append("course", form.course);
     formData.append("income", form.income);
-    if (document) formData.append("document", document);
+    if (doc) formData.append("document", doc);
 
     const response = await fetch(`${API}/apply`, {
       method: "POST",
@@ -48,6 +48,9 @@ function Apply() {
           <label>Email Address</label>
           <input type="email" name="email" placeholder="Enter your email" onChange={handleChange} required />
 
+          <label>Phone Number</label>
+          <input type="tel" name="phone" placeholder="10-digit phone number" onChange={handleChange} maxLength={10} required />
+
           <label>Course Applied For</label>
           <input type="text" name="course" value={form.course} readOnly />
 
@@ -55,12 +58,9 @@ function Apply() {
           <input type="number" name="income" placeholder="Enter annual income" onChange={handleChange} required />
 
           <label>Upload Document (PDF/Image)</label>
-          <input
-            type="file"
-            accept=".pdf,.jpg,.jpeg,.png"
-            onChange={(e) => setDocument(e.target.files[0])}
-            style={{ background: "#fff", cursor: "pointer" }}
-          />
+          <input type="file" accept=".pdf,.jpg,.jpeg,.png"
+            onChange={(e) => setDoc(e.target.files[0])}
+            style={{ background: "#fff", cursor: "pointer" }} />
           <p style={{ fontSize: "12px", color: "#94a3b8", marginTop: "4px" }}>
             Upload income certificate, marksheet, or any relevant document
           </p>
